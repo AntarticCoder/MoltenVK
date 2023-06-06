@@ -1781,7 +1781,6 @@ void MVKPhysicalDevice::initMetalFeatures() {
 		_metalFeatures.mslVersionEnum = MTLLanguageVersion3_0;
 	}
 #endif
-
 #if MVK_XCODE_15
     if ( mvkOSVersionIsAtLeast(17.0) ) {
         _metalFeatures.mslVersionEnum = MTLLanguageVersion3_1;
