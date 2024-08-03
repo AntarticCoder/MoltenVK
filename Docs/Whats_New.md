@@ -13,13 +13,104 @@ Copyright (c) 2015-2024 [The Brenwill Workshop Ltd.](http://www.brenwill.com)
 
 
 
-MoltenVK 1.2.9
---------------
+MoltenVK 1.2.11
+---------------
 
 Released TBD
 
+- Support dynamically allocating descriptors when pool is exhausted.
+- Deprecate `MVKConfiguration::preallocateDescriptors` and `MVK_CONFIG_PREALLOCATE_DESCRIPTORS` environment variable.
+- `vkAllocateDescriptorSets()`: Per Vulkan spec, if any descriptor set allocation 
+  fails, populate all descriptor set pointers with `VK_NULL_HANDLE`. In addition, 
+  return `VK_ERROR_FRAGMENTED_POOL` if failure was due to pool fragmentation.
+- Fix rendering issue with render pass that immediately follows a kernel dispatch.
+- Ensure all MoltenVK config info set by `VK_EXT_layer_settings` is used.
+- Move primitive-restart-disabled warning from renderpass to pipeline creation, to reduce voluminous log noise.
+- iOS: Support storage images in _Metal_ argument buffers.
+
+
+MoltenVK 1.2.10
+---------------
+
+Released 2024-07-15
+
+- Improvements to bindless resources and descriptor indexing:
+  - Add support for _Metal 3_ argument buffers.
+  - Support argument buffers on all platforms, when _Metal 3_ is available.
+  - Support argument buffers on _macOS_ when _Metal 3_ is not available.
+  - Use Metal argument buffers by default when they are available.
+  - Revert `MVKConfiguration::useMetalArgumentBuffers` and env var 
+    `MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS` to a boolean value, and enable it by default.
+  - Support multiplanar images in _Metal_ argument buffers.
+  - Support a descriptor pool with less descriptors than the descriptor set layout, 
+    as long as the pool has enough descriptors for the variable descriptor count,     
+  - Update max number of bindless buffers and textures per stage to 1M, per Apple Docs.
+  - Track `OpArrayLength` buffer-sizes buffer as an auxiliary buffer in each descriptor set 
+    argument buffer, as this is how SPIRV-Cross expects it.
+- Add option to generate a GPU capture via a temporary named pipe from an external process.
+- Fix shader conversion failure when using native texture atomics.
+- MSL shader conversion, only pass resource bindings that apply to current shader stage.
+- Graphics pipeline better support dynamic patch control points.
+- Fix crash when `VkPipelineShaderStageCreateInfo::pTessellationState` is null.
+- Update documentation for minimum runtime OS requirements to indicate _macOS 10.15_, _iOS 13_, or _tvOS 13_.
+- Add support for _Xcode 16_, _macOS 15 SDK_, _iOS 18 SDK_, and _MSL 3.2_.
+- Enforce barrier when sampling timestamps.
+- Update Github CI versions to use Github's latest _macOS_ and default _Xcode_, 
+  and update legacy CI support to _macOS 12_ and _Xcode 13.4.1_.
+- Update dependency libraries to match _Vulkan SDK 1.3.290_.
+- Update `MVK_PRIVATE_API_VERSION` to version `42`.
+- Update to latest SPIRV-Cross:
+  - MSL: Add option to force depth write in fragment shaders
+  - MSL: Improve handling of padded descriptors with argument buffers
+  - MSL: Support `ConstOffsets` on image gather.
+  - MSL: Image gather `ConstOffsets` supports multiple address spaces.
+  - MSL: Support a runtime array with dynamic offset in an argument buffer.
+  - MSL: Support descriptor sets with recursive content when using argument buffers.
+  - MSL: Don't bother supporting invalid multi-dimensional dynamic buffers.
+  - MSL: Do not overwrite `rez_bind` when padding.
+  - MSL: Only consider padding for non-aliased resources.
+  - MSL: Always use layout-declared array size for argument buffers.
+  - MSL: Allow UBO/SSBO resources to get the layout-derived size as well.
+  - MSL: Improve handling of padded descriptors with argument buffers.
+  - MSL: Fix invalid packing for pointer-to-vector.
+  - MSL: Handle `OpPtrAccessChain` with ArrayStride
+  - MSL: Consider pointer arithmetic for `OpPtrAccessChain`.
+  - MSL: Cast to packed format when using unexpected stride.
+  - MSL: Minor fix to resource type of `spvBufferSizeConstants` array indexes.
+
+
+
+MoltenVK 1.2.9
+--------------
+
+Released 2024/05/07
+
+- Add support for extensions:
+	- `VK_EXT_host_image_copy`
 - To support legacy apps, restore `MoltenVK/dylib` directory via symlink to `MoltenVK/dynamic/dylib`.
-- Add `MVKPerformanceTracker::previous` to track latest-but-one performance measurements.
+- Enhancements to `MVKPerformanceStatistics`. Add `MVKPerformanceTracker::previous`, 
+  `MVKQueuePerformance::waitSubmitCommandBuffers`, and `MVKQueuePerformance::waitPresentSwapchains`.
+- Add `MVK_CONFIG_SHADER_DUMP_DIR` configuration parameter to optionally dump shaders to files.
+- Return **MoltenVK** log level string in `pMessageIdName` field of debug utils callback data.
+- Fix crash when using `VK_EXT_metal_objects` under _ARC_.
+- Fix deadlock when creating a swapchain on a thread other than the main thread.
+- Fix potential memory leak in `vkQueueWaitIdle()`.
+- Fix argument buffer padding on shader conversion.
+- Avoid atomic image usage if native atomics are not supported on the platform.
+- Ensure buffer bindings are actually used to avoid potential overrun on Metal buffer indexes.
+- Update dependency libraries to match _Vulkan SDK 1.3.283_.
+- Update `MVK_PRIVATE_API_VERSION` to `41`.
+- Update to latest SPIRV-Cross:
+  - MSL: Add support for overlapping bindings.
+  - MSL: Use recursive template for `spvArrayCopy()`.
+  - MSL: Improve argument buffer descriptor aliasing implementation.
+  - MSL: Workaround compiler issue with image fence when used as reference.
+  - MSL: Fix SUMulExtended for 64-bit inputs.
+  - MSL: Handle Atomic{S,U}{Min,Max} with mismatched image sign.
+  - MSL: Handle missing FP16 trancendental overloads.
+  - MSL: Remove pointer wrapper stored in `spvDescriptorArray()` to avoid potential Metal compiler bug. 
+  - MSL: Fix argument buffer padding.
+
 
 
 MoltenVK 1.2.8
