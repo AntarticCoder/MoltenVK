@@ -506,6 +506,17 @@ void MVKPhysicalDevice::getFeatures(VkPhysicalDeviceFeatures2* features) {
 				shaderIntFuncsFeatures->shaderIntegerFunctions2 = true;
 				break;
 			}
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR: {
+				auto* accStructFeatures = (VkPhysicalDeviceAccelerationStructureFeaturesKHR*)next;
+                accStructFeatures->accelerationStructure = _metalFeatures.accelerationStructures;
+                accStructFeatures->accelerationStructureCaptureReplay = false;
+                accStructFeatures->accelerationStructureIndirectBuild = false;
+                accStructFeatures->accelerationStructureHostCommands = false;
+
+                // TODO: look into this
+                accStructFeatures->descriptorBindingAccelerationStructureUpdateAfterBind = false;
+				break;
+			}
 			default:
 				break;
 		}
@@ -849,6 +860,20 @@ void MVKPhysicalDevice::getProperties(VkPhysicalDeviceProperties2* properties) {
 			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES_EXT: {
 				auto* divisorProps = (VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT*)next;
 				divisorProps->maxVertexAttribDivisor = kMVKUndefinedLargeUInt32;
+				break;
+			}
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR: {
+				auto* accStructProps = (VkPhysicalDeviceAccelerationStructurePropertiesKHR*)next;
+                accStructProps->maxGeometryCount = 1 << 24;
+                accStructProps->maxInstanceCount = 1 << 24;
+                accStructProps->maxPrimitiveCount = 1 << 28;
+
+                // TODO: Not certain about these, doesn't seem to specify anywhere
+                accStructProps->maxPerStageDescriptorAccelerationStructures = _metalFeatures.maxPerStageBufferCount;
+                accStructProps->maxPerStageDescriptorUpdateAfterBindAccelerationStructures = _metalFeatures.maxPerStageBufferCount;
+                accStructProps->maxDescriptorSetAccelerationStructures = accStructProps->maxPerStageDescriptorAccelerationStructures * 5;
+                accStructProps->maxDescriptorSetUpdateAfterBindAccelerationStructures = accStructProps->maxPerStageDescriptorUpdateAfterBindAccelerationStructures * 5;
+                accStructProps->minAccelerationStructureScratchOffsetAlignment = (uint32_t)_metalFeatures.mtlBufferAlignment;
 				break;
 			}
 			default:
@@ -2007,6 +2032,7 @@ void MVKPhysicalDevice::initMetalFeatures() {
 #if MVK_XCODE_14
 	if ( mvkOSVersionIsAtLeast(16.0) ) {
 		_metalFeatures.mslVersionEnum = MTLLanguageVersion3_0;
+        _metalFeatures.accelerationStructures = true;
 	}
 #endif
 
@@ -2120,6 +2146,7 @@ void MVKPhysicalDevice::initMetalFeatures() {
 	if ( mvkOSVersionIsAtLeast(14.0) ) {
 		_metalFeatures.mslVersionEnum = MTLLanguageVersion2_3;
         _metalFeatures.multisampleArrayTextures = true;
+        _metalFeatures.accelerationStructures = true;
 		if ( supportsMTLGPUFamily(Apple7) ) {
 			_metalFeatures.maxQueryBufferSize = (256 * KIBI);
 			_metalFeatures.multisampleLayeredRendering = _metalFeatures.layeredRendering;
@@ -2222,6 +2249,7 @@ void MVKPhysicalDevice::initMetalFeatures() {
 #if MVK_XCODE_12
 	if ( mvkOSVersionIsAtLeast(11.0) ) {
 		_metalFeatures.mslVersionEnum = MTLLanguageVersion2_3;
+        _metalFeatures.accelerationStructures = true;
 	}
 #endif
 #if MVK_XCODE_13
@@ -3402,6 +3430,9 @@ void MVKPhysicalDevice::initExtensions() {
 	}
 	if (!_metalFeatures.arrayOfTextures || !_metalFeatures.arrayOfSamplers) {
 		pWritableExtns->vk_EXT_descriptor_indexing.enabled = false;
+
+        // Depends on descriptor indexinfs
+        pWritableExtns->vk_KHR_acceleration_structure.enabled = false;
 	}
     
     // The relevant functions are not available if not built with Xcode 14.
@@ -3410,10 +3441,14 @@ void MVKPhysicalDevice::initExtensions() {
     if (_metalFeatures.argumentBuffersTier < MTLArgumentBuffersTier2) {
 		pWritableExtns->vk_KHR_buffer_device_address.enabled = false;
 		pWritableExtns->vk_EXT_buffer_device_address.enabled = false;
+
+        // Depends on device address
+        pWritableExtns->vk_KHR_acceleration_structure.enabled = false;
 	}
 #else
     pWritableExtns->vk_KHR_buffer_device_address.enabled = false;
     pWritableExtns->vk_EXT_buffer_device_address.enabled = false;
+    pWritableExtns->vk_KHR_acceleration_structure.enabled = false;
 #endif
 
 #if MVK_MACOS
