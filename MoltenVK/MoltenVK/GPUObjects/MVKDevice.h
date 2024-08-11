@@ -76,6 +76,9 @@ class MVKAccelerationStructure; // Not sure where to place, I'll move it there l
 /** The buffer index to use for vertex content. */
 static constexpr uint32_t kMVKVertexContentBufferIndex = 0;
 
+/** The base address to use for fake acceleration structure device addresses */
+static constexpr uint64_t kMVKAccelerationStructureBaseAddr = 0x133700000000;
+
 // Parameters to define the sizing of inline collections
 static constexpr uint32_t   kMVKQueueFamilyCount = 4;
 static constexpr uint32_t   kMVKQueueCountPerQueueFamily = 1;		// Must be 1. See comments in MVKPhysicalDevice::getQueueFamilies()
@@ -820,6 +823,12 @@ public:
      */
     uint32_t expandVisibilityResultMTLBuffer(uint32_t queryCount);
 
+    /**
+     * Returns a local copy of the list of currently registered acceleration structures.
+     * Caller is responsible for releasing the returned object.
+     */
+    NSArray<id<MTLAccelerationStructure>>* getAccelerationStructureList();
+
 	/** Returns the GPU sample counter used for timestamps. */
 	id<MTLCounterSet> getTimestampMTLCounterSet() { return _physicalDevice->_timestampMTLCounterSet; }
 
@@ -990,8 +999,8 @@ protected:
 	MVKSmallVector<MVKResource*> _resources;
 	MVKSmallVector<MVKBuffer*> _gpuAddressableBuffers;
     MVKAddressMap* _gpuBufferAddressMap;
-    uint64_t _nextValidAccStructureAddress = 0;
     std::unordered_map<uint64_t, MVKAccelerationStructure*> _gpuAccStructAddressMap;
+	MVKSmallVector<id<MTLAccelerationStructure>> _allAccStructs;
 	MVKSmallVector<MVKPrivateDataSlot*> _privateDataSlots;
 	MVKSmallVector<bool> _privateDataSlotsAvailability;
 	MVKSmallVector<MVKSemaphoreImpl*> _awaitingSemaphores;
@@ -1000,6 +1009,7 @@ protected:
 	std::mutex _sem4Lock;
     std::mutex _perfLock;
 	std::mutex _vizLock;
+	std::mutex _accLock;
 	std::string _capturePipeFileName;
     id<MTLBuffer> _globalVisibilityResultMTLBuffer = nil;
 	id<MTLSamplerState> _defaultMTLSamplerState = nil;
