@@ -185,6 +185,27 @@ VkResult MVKBuffer::pullFromDevice(VkDeviceSize offset, VkDeviceSize size) {
 
 id<MTLBuffer> MVKBuffer::getMTLBuffer() {
 	if (_mtlBuffer) { return _mtlBuffer; }
+    if ((!_deviceMemory || !_deviceMemory->getMTLHeap()) && mvkIsAnyFlagEnabled(_usage, VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR)) {
+        lock_guard<mutex> lock(_lock);
+        if (_mtlBuffer) { return _mtlBuffer; }
+
+        MTLHeapDescriptor* heapDescriptor = [MTLHeapDescriptor new];
+        heapDescriptor.type = MTLHeapTypePlacement;
+        heapDescriptor.storageMode = MTLStorageModePrivate;
+        heapDescriptor.cpuCacheMode = MTLCPUCacheModeDefaultCache;
+        heapDescriptor.hazardTrackingMode = MTLHazardTrackingModeTracked;
+        heapDescriptor.size = getByteCount();
+        _mtlHeap = [getMTLDevice() newHeapWithDescriptor:heapDescriptor];
+        [heapDescriptor release];
+        if (!_mtlHeap) return nil;
+        
+        _mtlBuffer = [_mtlHeap newBufferWithLength: getByteCount()
+                                           options: mvkMTLResourceOptions(MTLStorageModePrivate, MTLCPUCacheModeDefaultCache)
+                                            offset: 0];
+
+		propagateDebugName();
+        return _mtlBuffer;
+    }
 	if (_deviceMemory) {
 		if (_deviceMemory->getMTLHeap()) {
             lock_guard<mutex> lock(_lock);
@@ -199,6 +220,12 @@ id<MTLBuffer> MVKBuffer::getMTLBuffer() {
 		}
 	}
 	return nil;
+}
+
+id<MTLHeap> MVKBuffer::getMTLHeap() {
+    if (_mtlHeap) { return _mtlHeap; }
+	if (_deviceMemory && _deviceMemory->getMTLHeap()) { return _deviceMemory->getMTLHeap(); }
+    return nil;
 }
 
 id<MTLBuffer> MVKBuffer::getMTLBufferCache() {
@@ -281,6 +308,8 @@ void MVKBuffer::detachMemory() {
 	_mtlBuffer = nil;
 	[_mtlBufferCache release];
 	_mtlBufferCache = nil;
+    [_mtlHeap release];
+    _mtlHeap = nil;
 }
 
 
