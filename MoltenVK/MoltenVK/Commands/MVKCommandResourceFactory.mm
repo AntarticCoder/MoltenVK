@@ -614,6 +614,10 @@ id<MTLComputePipelineState> MVKCommandResourceFactory::newAccumulateOcclusionQue
 	return newMTLComputePipelineState("accumulateOcclusionQueryResults", owner);
 }
 
+id<MTLComputePipelineState> MVKCommandResourceFactory::newCmdBuildAccelerationStructureConvertBuffersMTLComputePipelineState(MVKVulkanAPIDeviceObject* owner) {
+	return newMTLComputePipelineState("cmdBuildAccelerationStructureConvertBuffers", owner);
+}
+
 
 #pragma mark Support methods
 

@@ -65,45 +65,46 @@ typedef VkClearColorValue MVKColor32;
 
 /** Tracks the Vulkan command currently being used. */
 typedef enum : uint8_t {
-    kMVKCommandUseNone = 0,                     /**< No use defined. */
-	kMVKCommandUseBeginCommandBuffer,           /**< vkBeginCommandBuffer (prefilled VkCommandBuffer). */
-    kMVKCommandUseQueueSubmit,                  /**< vkQueueSubmit. */
-	kMVKCommandUseAcquireNextImage,             /**< vkAcquireNextImageKHR. */
-    kMVKCommandUseQueuePresent,                 /**< vkQueuePresentKHR. */
-    kMVKCommandUseQueueWaitIdle,                /**< vkQueueWaitIdle. */
-    kMVKCommandUseDeviceWaitIdle,               /**< vkDeviceWaitIdle. */
-	kMVKCommandUseInvalidateMappedMemoryRanges, /**< vkInvalidateMappedMemoryRanges. */
-	kMVKCommandUseBeginRendering,               /**< vkCmdBeginRendering. */
-    kMVKCommandUseBeginRenderPass,              /**< vkCmdBeginRenderPass. */
-    kMVKCommandUseNextSubpass,                  /**< vkCmdNextSubpass. */
-	kMVKCommandUseRestartSubpass,               /**< Create a new Metal renderpass due to Metal requirements. */
-    kMVKCommandUsePipelineBarrier,              /**< vkCmdPipelineBarrier. */
-    kMVKCommandUseBlitImage,                    /**< vkCmdBlitImage. */
-    kMVKCommandUseCopyImage,                    /**< vkCmdCopyImage. */
-    kMVKCommandUseResolveImage,                 /**< vkCmdResolveImage - resolve stage. */
-    kMVKCommandUseResolveExpandImage,           /**< vkCmdResolveImage - expand stage. */
-    kMVKCommandUseResolveCopyImage,             /**< vkCmdResolveImage - copy stage. */
-	kMVKCommandUseCopyImageToMemory,            /**< vkCopyImageToMemoryEXT host sync. */
-    kMVKCommandUseCopyBuffer,                   /**< vkCmdCopyBuffer. */
-    kMVKCommandUseCopyBufferToImage,            /**< vkCmdCopyBufferToImage. */
-    kMVKCommandUseCopyImageToBuffer,            /**< vkCmdCopyImageToBuffer. */
-    kMVKCommandUseFillBuffer,                   /**< vkCmdFillBuffer. */
-    kMVKCommandUseUpdateBuffer,                 /**< vkCmdUpdateBuffer. */
-	kMVKCommandUseClearAttachments,             /**< vkCmdClearAttachments. */
-    kMVKCommandUseClearColorImage,              /**< vkCmdClearColorImage. */
-    kMVKCommandUseClearDepthStencilImage,       /**< vkCmdClearDepthStencilImage. */
-    kMVKCommandUseResetQueryPool,               /**< vkCmdResetQueryPool. */
-    kMVKCommandUseDispatch,                     /**< vkCmdDispatch. */
-    kMVKCommandUseTessellationVertexTessCtl,    /**< vkCmdDraw* - vertex and tessellation control stages. */
-	kMVKCommandUseDrawIndirectConvertBuffers,   /**< vkCmdDrawIndirect* convert indirect buffers. */
-    kMVKCommandUseCopyQueryPoolResults,         /**< vkCmdCopyQueryPoolResults. */
-    kMVKCommandUseAccumOcclusionQuery,          /**< Any command terminating a Metal render pass with active visibility buffer. */
-	kMVKCommandUseRecordGPUCounterSample,        /**< Any command triggering the recording of a GPU counter sample. */
-    kMVKCommandUseBuildAccelerationStructure,       /**< vkCmdBuiildAccelerationStructure - Builds an acceleration structure */
-    kMVKCommandUseCopyAccelerationStructure,        /**< vkCmdCopyAccelerationStructure- Copies an acceleration structure to another acceleration structure*/
-    kMVKCommandUseCopyAccelerationStructureToMemory,/**< vkCmdCopyAccelerationStructureToMemory - Copies and serializes an acceleration structure to a buffer*/
-    kMVKCommandUseCopyMemoryToAccelerationStructure,/**< vkCmdCopyMemoryToAccelerationStructure - Copies and deserializes an acceleration structure from a buffer*/
-    kMVKCommandUseWriteAccelerationStructuresProperties,
+    kMVKCommandUseNone = 0,                                 /**< No use defined. */
+	kMVKCommandUseBeginCommandBuffer,                       /**< vkBeginCommandBuffer (prefilled VkCommandBuffer). */
+    kMVKCommandUseQueueSubmit,                              /**< vkQueueSubmit. */
+	kMVKCommandUseAcquireNextImage,                         /**< vkAcquireNextImageKHR. */
+    kMVKCommandUseQueuePresent,                             /**< vkQueuePresentKHR. */
+    kMVKCommandUseQueueWaitIdle,                            /**< vkQueueWaitIdle. */
+    kMVKCommandUseDeviceWaitIdle,                           /**< vkDeviceWaitIdle. */
+	kMVKCommandUseInvalidateMappedMemoryRanges,             /**< vkInvalidateMappedMemoryRanges. */
+	kMVKCommandUseBeginRendering,                           /**< vkCmdBeginRendering. */
+    kMVKCommandUseBeginRenderPass,                          /**< vkCmdBeginRenderPass. */
+    kMVKCommandUseNextSubpass,                              /**< vkCmdNextSubpass. */
+	kMVKCommandUseRestartSubpass,                           /**< Create a new Metal renderpass due to Metal requirements. */
+    kMVKCommandUsePipelineBarrier,                          /**< vkCmdPipelineBarrier. */
+    kMVKCommandUseBlitImage,                                /**< vkCmdBlitImage. */
+    kMVKCommandUseCopyImage,                                /**< vkCmdCopyImage. */
+    kMVKCommandUseResolveImage,                             /**< vkCmdResolveImage - resolve stage. */
+    kMVKCommandUseResolveExpandImage,                       /**< vkCmdResolveImage - expand stage. */
+    kMVKCommandUseResolveCopyImage,                         /**< vkCmdResolveImage - copy stage. */
+	kMVKCommandUseCopyImageToMemory,                        /**< vkCopyImageToMemoryEXT host sync. */
+    kMVKCommandUseCopyBuffer,                               /**< vkCmdCopyBuffer. */
+    kMVKCommandUseCopyBufferToImage,                        /**< vkCmdCopyBufferToImage. */
+    kMVKCommandUseCopyImageToBuffer,                        /**< vkCmdCopyImageToBuffer. */
+    kMVKCommandUseFillBuffer,                               /**< vkCmdFillBuffer. */
+    kMVKCommandUseUpdateBuffer,                             /**< vkCmdUpdateBuffer. */
+	kMVKCommandUseClearAttachments,                         /**< vkCmdClearAttachments. */
+    kMVKCommandUseClearColorImage,                          /**< vkCmdClearColorImage. */
+    kMVKCommandUseClearDepthStencilImage,                   /**< vkCmdClearDepthStencilImage. */
+    kMVKCommandUseResetQueryPool,                           /**< vkCmdResetQueryPool. */
+    kMVKCommandUseDispatch,                                 /**< vkCmdDispatch. */
+    kMVKCommandUseTessellationVertexTessCtl,                /**< vkCmdDraw* - vertex and tessellation control stages. */
+	kMVKCommandUseDrawIndirectConvertBuffers,               /**< vkCmdDrawIndirect* convert indirect buffers. */
+    kMVKCommandUseCopyQueryPoolResults,                     /**< vkCmdCopyQueryPoolResults. */
+    kMVKCommandUseAccumOcclusionQuery,                      /**< Any command terminating a Metal render pass with active visibility buffer. */
+	kMVKCommandUseRecordGPUCounterSample,                   /**< Any command triggering the recording of a GPU counter sample. */
+	kMVKCommandUseBuildAccelerationStructureConvertBuffers, /**< vkCmdBuildAccelerationStructure* convert instance buffers. */
+    kMVKCommandUseBuildAccelerationStructure,               /**< vkCmdBuildAccelerationStructure. */
+    kMVKCommandUseCopyAccelerationStructure,                /**< vkCmdCopyAccelerationStructure. */
+    kMVKCommandUseCopyAccelerationStructureToMemory,        /**< vkCmdCopyAccelerationStructureToMemory. */
+    kMVKCommandUseCopyMemoryToAccelerationStructure,        /**< vkCmdCopyMemoryToAccelerationStructure. */
+    kMVKCommandUseWriteAccelerationStructuresProperties,    /**< vkCmdWriteAccelerationStructureProperties. */
 } MVKCommandUse;
 
 /** Represents a given stage of a graphics pipeline. */

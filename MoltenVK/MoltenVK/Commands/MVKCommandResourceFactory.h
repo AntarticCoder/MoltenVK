@@ -487,6 +487,9 @@ public:
 	/** Returns a new MTLComputePipelineState for accumulating occlusion query results to a buffer. */
 	id<MTLComputePipelineState> newAccumulateOcclusionQueryResultsMTLComputePipelineState(MVKVulkanAPIDeviceObject* owner);
 
+	/** Returns a new MTLComputePipelineState for converting Vulkan acceleration structure instances to MTL instances. */
+	id<MTLComputePipelineState> newCmdBuildAccelerationStructureConvertBuffersMTLComputePipelineState(MVKVulkanAPIDeviceObject* owner);
+
 
 #pragma mark Construction
 

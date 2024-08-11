@@ -886,6 +886,7 @@ id<MTLCommandEncoder> MVKCommandEncoder::getMTLEncoder(){
 	if (_mtlRenderEncoder) { return _mtlRenderEncoder; }
 	if (_mtlComputeEncoder) { return _mtlComputeEncoder; }
 	if (_mtlBlitEncoder) { return _mtlBlitEncoder; }
+	if (_mtlAccelerationStructureEncoder) { return _mtlAccelerationStructureEncoder; }
 	return nil;
 }
 
@@ -1180,6 +1181,8 @@ MVKCommandEncoder::MVKCommandEncoder(MVKCommandBuffer* cmdBuffer,
 	_mtlComputeEncoderUse = kMVKCommandUseNone;
 	_mtlBlitEncoder = nil;
 	_mtlBlitEncoderUse = kMVKCommandUseNone;
+    _mtlAccelerationStructureEncoder = nil;
+    _mtlAccelerationStructureEncoderUse = kMVKCommandUseNone;
 	_pEncodingContext = nullptr;
 	_stageCountersMTLFence = nil;
 	_flushCount = 0;
@@ -1189,6 +1192,7 @@ MVKCommandEncoder::~MVKCommandEncoder() {
 	[_mtlRenderEncoder release];
 	[_mtlComputeEncoder release];
 	[_mtlBlitEncoder release];
+	[_mtlAccelerationStructureEncoder release];
 	// _stageCountersMTLFence is released after Metal command buffer completion
 }
 
@@ -1230,27 +1234,29 @@ NSString* mvkMTLBlitCommandEncoderLabel(MVKCommandUse cmdUse) {
 
 NSString* mvkMTLComputeCommandEncoderLabel(MVKCommandUse cmdUse) {
     switch (cmdUse) {
-        case kMVKCommandUseDispatch:                        return @"vkCmdDispatch ComputeEncoder";
-        case kMVKCommandUseCopyBuffer:                      return @"vkCmdCopyBuffer ComputeEncoder";
-        case kMVKCommandUseCopyBufferToImage:               return @"vkCmdCopyBufferToImage ComputeEncoder";
-        case kMVKCommandUseCopyImageToBuffer:               return @"vkCmdCopyImageToBuffer ComputeEncoder";
-        case kMVKCommandUseFillBuffer:                      return @"vkCmdFillBuffer ComputeEncoder";
-        case kMVKCommandUseClearColorImage:                 return @"vkCmdClearColorImage ComputeEncoder";
-		case kMVKCommandUseResolveImage:                    return @"Resolve Subpass Attachment ComputeEncoder";
-        case kMVKCommandUseTessellationVertexTessCtl:       return @"vkCmdDraw (vertex and tess control stages) ComputeEncoder";
-        case kMVKCommandUseDrawIndirectConvertBuffers:      return @"vkCmdDraw (convert indirect buffers) ComputeEncoder";
-        case kMVKCommandUseCopyQueryPoolResults:            return @"vkCmdCopyQueryPoolResults ComputeEncoder";
-        case kMVKCommandUseAccumOcclusionQuery:             return @"Post-render-pass occlusion query accumulation ComputeEncoder";
-        default:                                            return @"Unknown Use ComputeEncoder";
+        case kMVKCommandUseDispatch:                                  return @"vkCmdDispatch ComputeEncoder";
+        case kMVKCommandUseCopyBuffer:                                return @"vkCmdCopyBuffer ComputeEncoder";
+        case kMVKCommandUseCopyBufferToImage:                         return @"vkCmdCopyBufferToImage ComputeEncoder";
+        case kMVKCommandUseCopyImageToBuffer:                         return @"vkCmdCopyImageToBuffer ComputeEncoder";
+        case kMVKCommandUseFillBuffer:                                return @"vkCmdFillBuffer ComputeEncoder";
+        case kMVKCommandUseClearColorImage:                           return @"vkCmdClearColorImage ComputeEncoder";
+		case kMVKCommandUseResolveImage:                              return @"Resolve Subpass Attachment ComputeEncoder";
+        case kMVKCommandUseTessellationVertexTessCtl:                 return @"vkCmdDraw (vertex and tess control stages) ComputeEncoder";
+        case kMVKCommandUseDrawIndirectConvertBuffers:                return @"vkCmdDraw (convert indirect buffers) ComputeEncoder";
+        case kMVKCommandUseCopyQueryPoolResults:                      return @"vkCmdCopyQueryPoolResults ComputeEncoder";
+        case kMVKCommandUseAccumOcclusionQuery:                       return @"Post-render-pass occlusion query accumulation ComputeEncoder";
+        case kMVKCommandUseBuildAccelerationStructureConvertBuffers:  return @"vkCmdBuildAccelerationStructures (convert instance buffers) ComputeEncoder";
+        default:                                                      return @"Unknown Use ComputeEncoder";
     }
 }
 
 NSString* mvkMTLAccelerationStructureCommandEncoderLabel(MVKCommandUse cmdUse) {
     switch (cmdUse) {
-        case kMVKCommandUseBuildAccelerationStructure:        return @"vkCmdBuildAccelerationStructuresKHR AccelerationStructureEncoder";
-        case kMVKCommandUseCopyAccelerationStructure:         return @"vkCmdCopyAccelerationStructureKHR AccelerationStructureEncoder";
-        case kMVKCommandUseCopyAccelerationStructureToMemory: return @"vkCmdCopyAccelerationStructureToMemoryKHR AccelerationStructureEncoder";
-        case kMVKCommandUseCopyMemoryToAccelerationStructure: return @"vkCmdCopyMemoryToAccelerationStructureKHR AccelerationStructureEncoder";
-        default:                                              return @"Unknown Use AccelerationStructureEncoder";
+        case kMVKCommandUseBuildAccelerationStructure:            return @"vkCmdBuildAccelerationStructures AccelerationStructureEncoder";
+        case kMVKCommandUseCopyAccelerationStructure:             return @"vkCmdCopyAccelerationStructure AccelerationStructureEncoder";
+        case kMVKCommandUseCopyAccelerationStructureToMemory:     return @"vkCmdCopyAccelerationStructureToMemory AccelerationStructureEncoder";
+        case kMVKCommandUseCopyMemoryToAccelerationStructure:     return @"vkCmdCopyMemoryToAccelerationStructure AccelerationStructureEncoder";
+        case kMVKCommandUseWriteAccelerationStructuresProperties: return @"vkCmdWriteAccelerationStructureProperties AccelerationStructureEncoder";
+        default:                                                  return @"Unknown Use AccelerationStructureEncoder";
     }
 }
