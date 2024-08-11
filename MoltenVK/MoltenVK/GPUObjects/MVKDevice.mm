@@ -4225,7 +4225,7 @@ void MVKDevice::destroyPipelineLayout(MVKPipelineLayout* mvkPLL,
 
 MVKAccelerationStructure* MVKDevice::createAccelerationStructure(const VkAccelerationStructureCreateInfoKHR* pCreateInfo,
                                                                  const VkAllocationCallbacks*                pAllocator) {
-    return addAccelerationStructure(new MVKAccelerationStructure(this));
+    return addAccelerationStructure(new MVKAccelerationStructure(this, pCreateInfo));
 }
 
 void MVKDevice::destroyAccelerationStructure(MVKAccelerationStructure*     mvkAccStruct,

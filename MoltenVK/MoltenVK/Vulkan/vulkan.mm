@@ -2918,9 +2918,9 @@ MVK_PUBLIC_VULKAN_SYMBOL void vkGetAccelerationStructureBuildSizesKHR(
     VkAccelerationStructureBuildSizesInfoKHR*             pSizeInfo) {
     
     MVKTraceVulkanCallStart();
-    MVKDevice* mvkDev = (MVKDevice*)device;
-    VkAccelerationStructureBuildSizesInfoKHR buildSizes = MVKAccelerationStructure::getBuildSizes(mvkDev, buildType, pBuildInfo, pMaxPrimitiveCounts);
-    pSizeInfo = &buildSizes;
+    MVKDevice* mvkDev = MVKDevice::getMVKDevice(device);
+    MVKAccelerationStructure empty(mvkDev);
+    *pSizeInfo = empty.getBuildSizes(buildType, pBuildInfo, pMaxPrimitiveCounts);
     MVKTraceVulkanCallEnd();
 }
 
@@ -2930,7 +2930,7 @@ MVK_PUBLIC_VULKAN_SYMBOL void vkGetDeviceAccelerationStructureCompatibilityKHR(
     VkAccelerationStructureCompatibilityKHR*        pCompatibility) {
     
     MVKTraceVulkanCallStart();
-    MVKDevice* mvkDev = (MVKDevice*)device;
+    MVKDevice* mvkDev = MVKDevice::getMVKDevice(device);
     *pCompatibility = mvkDev->getAccelerationStructureCompatibility(pVersionInfo);
     MVKTraceVulkanCallEnd();
 }
