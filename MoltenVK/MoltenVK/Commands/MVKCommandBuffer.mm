@@ -1407,7 +1407,7 @@ MVKCommandEncoder::MVKCommandEncoder(MVKCommandBuffer* cmdBuffer,
 	_mtlBlitEncoder = nil;
 	_mtlBlitEncoderUse = kMVKCommandUseNone;
     _mtlAccelerationStructureEncoder = nil;
-    _mtlAccelerationStructureUse = kMVKCommandUseNone;
+    _mtlAccelerationStructureEncoderUse = kMVKCommandUseNone;
 	_pEncodingContext = nullptr;
 	_stageCountersMTLFence = nil;
 	_flushCount = 0;
@@ -1417,7 +1417,7 @@ MVKCommandEncoder::~MVKCommandEncoder() {
 	[_mtlRenderEncoder release];
 	[_mtlComputeEncoder release];
 	[_mtlBlitEncoder release];
-    [_mtlAccelerationStructureEncoder release];
+	[_mtlAccelerationStructureEncoder release];
 	// _stageCountersMTLFence is released after Metal command buffer completion
 }
 
@@ -1471,16 +1471,18 @@ NSString* mvkMTLComputeCommandEncoderLabel(MVKCommandUse cmdUse) {
         case kMVKCommandUseCopyQueryPoolResults:            return @"vkCmdCopyQueryPoolResults ComputeEncoder";
         case kMVKCommandUseAccumOcclusionQuery:             return @"Post-render-pass occlusion query accumulation ComputeEncoder";
         case kMVKCommandConvertUint8Indices:                return @"Convert Uint8 indices to Uint16 ComputeEncoder";
-        default:                                            return @"Unknown Use ComputeEncoder";
+        case kMVKCommandUseBuildAccelerationStructureConvertBuffers:  return @"vkCmdBuildAccelerationStructures (convert instance buffers) ComputeEncoder";
+        default:                                                      return @"Unknown Use ComputeEncoder";
     }
 }
 
 NSString* mvkMTLAccelerationStructureCommandEncoderLabel(MVKCommandUse cmdUse) {
     switch (cmdUse) {
-        case kMVKCommandUseBuildAccelerationStructure:        return @"vkCmdBuildAccelerationStructuresKHR AccelerationStructureEncoder";
-        case kMVKCommandUseCopyAccelerationStructure:         return @"vkCmdCopyAccelerationStructureKHR AccelerationStructureEncoder";
-        case kMVKCommandUseCopyAccelerationStructureToMemory: return @"vkCmdCopyAccelerationStructureToMemoryKHR AccelerationStructureEncoder";
-        case kMVKCommandUseCopyMemoryToAccelerationStructure: return @"vkCmdCopyMemoryToAccelerationStructureKHR AccelerationStructureEncoder";
-        default:                                              return @"Unknown Use AccelerationStructureEncoder";
+        case kMVKCommandUseBuildAccelerationStructure:            return @"vkCmdBuildAccelerationStructures AccelerationStructureEncoder";
+        case kMVKCommandUseCopyAccelerationStructure:             return @"vkCmdCopyAccelerationStructure AccelerationStructureEncoder";
+        case kMVKCommandUseCopyAccelerationStructureToMemory:     return @"vkCmdCopyAccelerationStructureToMemory AccelerationStructureEncoder";
+        case kMVKCommandUseCopyMemoryToAccelerationStructure:     return @"vkCmdCopyMemoryToAccelerationStructure AccelerationStructureEncoder";
+        case kMVKCommandUseWriteAccelerationStructuresProperties: return @"vkCmdWriteAccelerationStructureProperties AccelerationStructureEncoder";
+        default:                                                  return @"Unknown Use AccelerationStructureEncoder";
     }
 }
