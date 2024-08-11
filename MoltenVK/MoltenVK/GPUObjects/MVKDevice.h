@@ -777,6 +777,9 @@ public:
 
 	/** Log all performance statistics. */
 	void logPerformanceSummary();
+
+    /** Tracks or untracks a buffer address in the registry to be visible to getBufferAtAddress. */
+	void trackBufferAddress(MVKBuffer* mvkBuff, bool track);
     
     /** Returns a pointer to the buffer at the provided address*/
     MVKBuffer* getBufferAtAddress(uint64_t address);

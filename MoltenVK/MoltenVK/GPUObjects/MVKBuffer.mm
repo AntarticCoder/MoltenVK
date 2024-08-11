@@ -92,7 +92,14 @@ VkResult MVKBuffer::bindDeviceMemory(MVKDeviceMemory* mvkMem, VkDeviceSize memOf
 
 	propagateDebugName();
 
-	return _deviceMemory ? _deviceMemory->addBuffer(this) : VK_SUCCESS;
+	VkResult result = _deviceMemory ? _deviceMemory->addBuffer(this) : VK_SUCCESS;
+
+    // Track memory address once it is bound
+    if (result == VK_SUCCESS && mvkIsAnyFlagEnabled(_usage, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)) {
+        getDevice()->trackBufferAddress(this, true);
+    }
+
+    return result;
 }
 
 VkResult MVKBuffer::bindDeviceMemory2(const VkBindBufferMemoryInfo* pBindInfo) {
@@ -294,6 +301,8 @@ void MVKBuffer::destroy() {
 
 // Potentially called twice, from destroy() and destructor, so ensure everything is nulled out.
 void MVKBuffer::detachMemory() {
+    if ((_mtlBuffer || _deviceMemory) && mvkIsAnyFlagEnabled(_usage, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT))
+        getDevice()->trackBufferAddress(this, false);
 	if (_deviceMemory) { _deviceMemory->removeBuffer(this); }
 	_deviceMemory = nullptr;
 	if (_mtlBuffer) getDevice()->removeResidency(_mtlBuffer);

@@ -4345,6 +4345,21 @@ VkExtent2D MVKDevice::getDynamicRenderAreaGranularity() {
     return { 1, 1 };
 }
 
+void MVKDevice::trackBufferAddress(MVKBuffer* mvkBuff, bool track) {
+    MVKAddressMap::Entry entry = {
+        mvkBuff->getMTLBufferGPUAddress(),
+        mvkBuff->getByteCount(),
+        mvkBuff
+    };
+
+    if (entry.baseAddress == 0) return;
+    
+    if (track)
+        _gpuBufferAddressMap->addEntry(entry);
+    else
+        _gpuBufferAddressMap->removeEntry(entry);
+}
+
 MVKBuffer* MVKDevice::getBufferAtAddress(uint64_t address)
 {
     void* value = nullptr;
