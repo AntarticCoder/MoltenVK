@@ -336,16 +336,17 @@ void MVKPhysicalDevice::getFeatures(VkPhysicalDeviceFeatures2* features) {
 				storageFeatures->storagePushConstant8 = supportedFeats12.storagePushConstant8;
 				break;
 			}
-            case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR: {
-                // In the future we should update this to allow for more advanced features if they can be supported.
-                auto* storageFeatures = (VkPhysicalDeviceAccelerationStructureFeaturesKHR*)next;
-                storageFeatures->accelerationStructure = mvkOSVersionIsAtLeast(11.0, 14.0, 1.0);
-                storageFeatures->accelerationStructureCaptureReplay = false;
-                storageFeatures->accelerationStructureIndirectBuild = false;
-                storageFeatures->accelerationStructureHostCommands = false;
-                storageFeatures->descriptorBindingAccelerationStructureUpdateAfterBind = false;
-                break;
-            }
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR: {
+				auto* accStructFeatures = (VkPhysicalDeviceAccelerationStructureFeaturesKHR*)next;
+        accStructFeatures->accelerationStructure = _metalFeatures.accelerationStructures;
+        accStructFeatures->accelerationStructureCaptureReplay = false;
+        accStructFeatures->accelerationStructureIndirectBuild = false;
+        accStructFeatures->accelerationStructureHostCommands = false;
+
+        // TODO: look into this
+        accStructFeatures->descriptorBindingAccelerationStructureUpdateAfterBind = false;
+				break;
+			}
 			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES:
 			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT: {
 				auto* bufferDeviceAddressFeatures = (VkPhysicalDeviceBufferDeviceAddressFeatures*)next;
@@ -762,17 +763,6 @@ void MVKPhysicalDevice::getFeatures(VkPhysicalDeviceFeatures2* features) {
 				shaderIntFuncsFeatures->shaderIntegerFunctions2 = true;
 				break;
 			}
-			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR: {
-				auto* accStructFeatures = (VkPhysicalDeviceAccelerationStructureFeaturesKHR*)next;
-                accStructFeatures->accelerationStructure = _metalFeatures.accelerationStructures;
-                accStructFeatures->accelerationStructureCaptureReplay = false;
-                accStructFeatures->accelerationStructureIndirectBuild = false;
-                accStructFeatures->accelerationStructureHostCommands = false;
-
-                // TODO: look into this
-                accStructFeatures->descriptorBindingAccelerationStructureUpdateAfterBind = false;
-				break;
-			}
 			default:
 				break;
 		}
@@ -983,19 +973,20 @@ void MVKPhysicalDevice::getProperties(VkPhysicalDeviceProperties2* properties) {
 				populateHostImageCopyProperties((VkPhysicalDeviceHostImageCopyProperties*)next);
 				break;
 			}
-            case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR: {
-                /*
-                    These are all magic numbers at the moment and should be probaly defined as constants, as well as that, there is an extended mode which allows for more geometry in the acceleration structures. If you're looking for a source here it is. https://developer.apple.com/documentation/metal/mtlaccelerationstructureusage/3750490-extendedlimits
-                */
-        
-                auto* accelerationStructureProps = (VkPhysicalDeviceAccelerationStructurePropertiesKHR*)next;
-                accelerationStructureProps->maxGeometryCount = pow(2, 24);
-                accelerationStructureProps->maxInstanceCount = pow(2, 24);
-                accelerationStructureProps->maxPrimitiveCount = pow(2, 28);
-                accelerationStructureProps->minAccelerationStructureScratchOffsetAlignment = (uint32_t)_metalFeatures.mtlBufferAlignment;
-                // Other properties have not been figured out quite yet
-                break;
-            }
+			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR: {
+				auto* accStructProps = (VkPhysicalDeviceAccelerationStructurePropertiesKHR*)next;
+        accStructProps->maxGeometryCount = 1 << 24;
+        accStructProps->maxInstanceCount = 1 << 24;
+        accStructProps->maxPrimitiveCount = 1 << 28;
+
+        // TODO: Not certain about these, doesn't seem to specify anywhere
+        accStructProps->maxPerStageDescriptorAccelerationStructures = _metalFeatures.maxPerStageBufferCount;
+        accStructProps->maxPerStageDescriptorUpdateAfterBindAccelerationStructures = _metalFeatures.maxPerStageBufferCount;
+        accStructProps->maxDescriptorSetAccelerationStructures = accStructProps->maxPerStageDescriptorAccelerationStructures * 5;
+        accStructProps->maxDescriptorSetUpdateAfterBindAccelerationStructures = accStructProps->maxPerStageDescriptorUpdateAfterBindAccelerationStructures * 5;
+        accStructProps->minAccelerationStructureScratchOffsetAlignment = (uint32_t)_metalFeatures.mtlBufferAlignment;
+				break;
+			}
 			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES: {
 				auto* dvcIDProps = (VkPhysicalDeviceIDProperties*)next;
 				mvkCopy(dvcIDProps->deviceUUID, supportedProps11.deviceUUID, VK_UUID_SIZE);
@@ -1289,20 +1280,6 @@ void MVKPhysicalDevice::getProperties(VkPhysicalDeviceProperties2* properties) {
 				// VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT is different than the promoted VkPhysicalDeviceVertexAttributeDivisorProperties.
 				auto* divisorProps = (VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT*)next;
 				divisorProps->maxVertexAttribDivisor = supportedProps14.maxVertexAttribDivisor;
-				break;
-			}
-			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR: {
-				auto* accStructProps = (VkPhysicalDeviceAccelerationStructurePropertiesKHR*)next;
-                accStructProps->maxGeometryCount = 1 << 24;
-                accStructProps->maxInstanceCount = 1 << 24;
-                accStructProps->maxPrimitiveCount = 1 << 28;
-
-                // TODO: Not certain about these, doesn't seem to specify anywhere
-                accStructProps->maxPerStageDescriptorAccelerationStructures = _metalFeatures.maxPerStageBufferCount;
-                accStructProps->maxPerStageDescriptorUpdateAfterBindAccelerationStructures = _metalFeatures.maxPerStageBufferCount;
-                accStructProps->maxDescriptorSetAccelerationStructures = accStructProps->maxPerStageDescriptorAccelerationStructures * 5;
-                accStructProps->maxDescriptorSetUpdateAfterBindAccelerationStructures = accStructProps->maxPerStageDescriptorUpdateAfterBindAccelerationStructures * 5;
-                accStructProps->minAccelerationStructureScratchOffsetAlignment = (uint32_t)_metalFeatures.mtlBufferAlignment;
 				break;
 			}
 			default:
@@ -2734,7 +2711,7 @@ void MVKPhysicalDevice::initMetalFeatures() {
 #if MVK_XCODE_12
 	if ( mvkOSVersionIsAtLeast(11.0) ) {
 		_metalFeatures.mslVersionEnum = MTLLanguageVersion2_3;
-        _metalFeatures.accelerationStructures = true;
+    _metalFeatures.accelerationStructures = true;
 	}
 #endif
 #if MVK_XCODE_13

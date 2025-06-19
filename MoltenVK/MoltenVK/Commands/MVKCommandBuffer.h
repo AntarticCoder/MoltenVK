@@ -555,7 +555,7 @@ protected:
     uint32_t _flushCount;
 	MVKCommandUse _mtlComputeEncoderUse;
 	MVKCommandUse _mtlBlitEncoderUse;
-    MVKCommandUse _mtlAccelerationStructureEncoderUse;
+  MVKCommandUse _mtlAccelerationStructureEncoderUse;
 	bool _isRenderingEntireAttachment;
 };
 

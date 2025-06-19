@@ -577,6 +577,13 @@ static MVKBarrierStage commandUseToBarrierStage(MVKCommandUse use) {
 	case kMVKCommandUseAccumOcclusionQuery:          return kMVKBarrierStageNone; /**< Any command terminating a Metal render pass with active visibility buffer. */
 	case kMVKCommandConvertUint8Indices:             return kMVKBarrierStageCopy; /**< Converting a Uint8 index buffer to Uint16. */
 	case kMVKCommandUseRecordGPUCounterSample:       return kMVKBarrierStageNone; /**< Any command triggering the recording of a GPU counter sample. */
+  // TODO: validate these
+  case kMVKCommandUseBuildAccelerationStructureConvertBuffers: return kMVKBarrierStageCopy;
+  case kMVKCommandUseBuildAccelerationStructure:               return kMVKBarrierStageNone;
+  case kMVKCommandUseCopyAccelerationStructure:                return kMVKBarrierStageCopy;
+  case kMVKCommandUseCopyAccelerationStructureToMemory:        return kMVKBarrierStageCopy;
+  case kMVKCommandUseCopyMemoryToAccelerationStructure:        return kMVKBarrierStageCopy;
+  case kMVKCommandUseWriteAccelerationStructuresProperties:    return kMVKBarrierStageNone; 
 	}
 }
 
@@ -1016,10 +1023,6 @@ void MVKCommandEncoder::endCurrentMetalEncoding() {
 	endMetalEncoding(_mtlBlitEncoder);
     _mtlBlitEncoderUse = kMVKCommandUseNone;
     
-    if (_mtlAccelerationStructureEncoder && _cmdBuffer->_hasStageCounterTimestampCommand) { [_mtlAccelerationStructureEncoder updateFence: getStageCountersMTLFence()]; }
-    endMetalEncoding(_mtlAccelerationStructureEncoder);
-    _mtlAccelerationStructureUse = kMVKCommandUseNone;
-
 	if (_mtlAccelerationStructureEncoder && _cmdBuffer->_hasStageCounterTimestampCommand) { [_mtlAccelerationStructureEncoder updateFence: getStageCountersMTLFence()]; }
 	endMetalEncoding(_mtlAccelerationStructureEncoder);
     _mtlAccelerationStructureEncoderUse = kMVKCommandUseNone;
@@ -1061,11 +1064,11 @@ id<MTLBlitCommandEncoder> MVKCommandEncoder::getMTLBlitEncoder(MVKCommandUse cmd
 		_mtlBlitEncoder = [_mtlCmdBuffer blitCommandEncoder];
 		retainIfImmediatelyEncoding(_mtlBlitEncoder);
 	}
-    if (_mtlBlitEncoderUse != cmdUse) {
+  if (_mtlBlitEncoderUse != cmdUse) {
 		needWaits = true;
-        _mtlBlitEncoderUse = cmdUse;
+    _mtlBlitEncoderUse = cmdUse;
 		_cmdBuffer->setMetalObjectLabel(_mtlBlitEncoder, mvkMTLBlitCommandEncoderLabel(cmdUse));
-    }
+  }
 	if (needWaits) {
 		encodeBarrierWaits(cmdUse);
 	}
@@ -1073,23 +1076,29 @@ id<MTLBlitCommandEncoder> MVKCommandEncoder::getMTLBlitEncoder(MVKCommandUse cmd
 }
 
 id<MTLAccelerationStructureCommandEncoder> MVKCommandEncoder::getMTLAccelerationStructureEncoder(MVKCommandUse cmdUse) {
-    if ( !_mtlAccelerationStructureEncoder ) {
-        endCurrentMetalEncoding();
-        _mtlAccelerationStructureEncoder = [_mtlCmdBuffer accelerationStructureCommandEncoder];
-        retainIfImmediatelyEncoding(_mtlAccelerationStructureEncoder);
-    }
-    if (_mtlAccelerationStructureEncoderUse != cmdUse) {
-        _mtlAccelerationStructureEncoderUse = cmdUse;
-        setLabelIfNotNil(_mtlAccelerationStructureEncoder, mvkMTLAccelerationStructureCommandEncoderLabel(cmdUse));
-    }
-    return _mtlAccelerationStructureEncoder;
+	bool needWaits = false;
+  if ( !_mtlAccelerationStructureEncoder ) {
+    needWaits = true;
+    endCurrentMetalEncoding();
+    _mtlAccelerationStructureEncoder = [_mtlCmdBuffer accelerationStructureCommandEncoder];
+    retainIfImmediatelyEncoding(_mtlAccelerationStructureEncoder);
+  }
+  if (_mtlAccelerationStructureEncoderUse != cmdUse) {
+    needWaits = true;
+    _mtlAccelerationStructureEncoderUse = cmdUse;
+		_cmdBuffer->setMetalObjectLabel(_mtlAccelerationStructureEncoder, mvkMTLAccelerationStructureCommandEncoderLabel(cmdUse));
+  }
+	if (needWaits) {
+		encodeBarrierWaits(cmdUse);
+	}
+  return _mtlAccelerationStructureEncoder;
 }
 
 id<MTLCommandEncoder> MVKCommandEncoder::getMTLEncoder(){
 	if (_mtlRenderEncoder) { return _mtlRenderEncoder; }
 	if (_mtlComputeEncoder) { return _mtlComputeEncoder; }
 	if (_mtlBlitEncoder) { return _mtlBlitEncoder; }
-    if (_mtlAccelerationStructureEncoder) { return _mtlAccelerationStructureEncoder; }
+  if (_mtlAccelerationStructureEncoder) { return _mtlAccelerationStructureEncoder; }
 	return nil;
 }
 
